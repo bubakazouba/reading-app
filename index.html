@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <title>Papy App</title>
+    <style type="text/css">
+    div.a {
+        text-align: center;
+        font-size: 120px;
+    }
+
+    div.b {
+        text-align: center;
+        font-size: 60px;
+    }
+    </style>
+</head>
+
+<body>
+    <br><br><br><br>
+    <div class="a" id="word">...</div>
+    <button id="done-btn" type="button" class="btn btn-lg btn-primary a" style="margin: 0 auto;  display: none;">Done</button>
+    <button id="start-btn" type="button" class="btn btn-lg btn-success a" style="margin: 0 auto;  display: block;">Start</button>
+    <div class="a" id="score">0/0</div>
+</body>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
+import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyBcMXOEecorwdcPtRInVa3AJaOMJz22H3Q",
+    authDomain: "reading-app-43d4a.firebaseapp.com",
+    projectId: "reading-app-43d4a",
+    storageBucket: "reading-app-43d4a.appspot.com",
+    messagingSenderId: "725743097117",
+    appId: "1:725743097117:web:02318c7ab097bfe663bdf4",
+    measurementId: "G-DDKP2XNYHZ"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
+
+    
+// https://firebase.google.com/docs/firestore/query-data/get-data
+async function getData() {
+    const metricsCollectionRef = collection(db, 'metrics');
+
+    const docRef = doc(db, "metrics", "test");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        let d = docSnap.data();
+        console.log("Document data:", d);
+        return d;
+    }
+    else {
+      // doc.data() will be undefined in this case
+      console.log("No such document!");
+  }
+}
+// https://firebase.google.com/docs/firestore/manage-data/add-data
+// score = {wordsRead: <int>, totalWords: <int>}
+async function addScore(score) {
+    let key = (new Date()).getTime();
+    await setDoc(doc(db, "metrics", String(key)), {
+      wordsRead: score.wordsRead,
+      totalWords: score.totalWords,
+      time: key,
+      timePerWord: TIME_PER_WORD,
+      // wordsConfiguration: {
+      //   "3-letter-words": 20,
+      //   "4-letter-words": 0,
+      //   "5-letter-words": 0,
+      // }
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const WORDS = ["shy", "bow", "pit", "can", "bat", "fur", "eye", "raw", "kit", "fat", "oak", "ton", "hut", "ego", "sum", "jam", "lot", "try", "dog", "fly", "jaw", "sex", "ear", "nun", "set", "vat", "rob", "new", "fog", "fun", "tin", "kid", "run", "egg", "buy", "way", "fit", "sea", "fax", "man", "dry", "cat", "bed", "win", "bar", "pop", "log", "owl", "hot", "pig", "ice", "row", "lid", "net", "bin", "far", "cap", "fan", "era", "bay", "low", "war", "car", "gun", "bee", "god", "sow", "boy", "sin", "cut", "pat", "hit", "see", "day", "jet", "fox", "lay", "fix", "add", "pay", "age", "say", "tax", "art", "pie", "oil", "sip", "law", "use", "get", "act", "eat", "sit", "lip", "sun", "pen", "due", "nut", "end", "leg", "hay", "van", "rub", "mug", "cup", "ban", "nap", "hip", "arm", "bet", "red", "fee", "pan", "old", "owe", "bag", "gas", "pot", "lie", "cry", "gem", "hen", "die", "job", "air", "few", "key", "tip", "bus", "ask", "ant", "joy", "mud", "aid", "top", "flu", "inn", "rib", "beg", "put", "bad", "dip", "cow", "pin", "tie", "ago", "all", "and", "any", "big", "bit", "box", "but", "for", "guy", "her", "him", "his", "how", "its", "let", "may", "not", "now", "off", "one", "our", "out", "own", "per", "she", "six", "son", "ten", "too", "two", "who", "why", "yes", "yet", "you"];
+const OTHER_WORDS = ["able", "also", "area", "away", "baby", "back", "ball", "bank", "base", "best", "bill", "blue", "body", "book", "both", "call", "card", "care", "case", "cell", "city", "cold", "come", "cost", "dark", "data", "dead", "deal", "deep", "door", "down", "draw", "drop", "drug", "each", "east", "easy", "edge", "else", "even", "ever", "face", "fact", "fail", "fall", "fear", "feel", "fill", "film", "find", "fine", "fire", "firm", "fish", "five", "food", "foot", "form", "four", "free", "from", "full", "fund", "game", "girl", "give", "goal", "good", "grow", "hair", "half", "hand", "hang", "hard", "have", "head", "hear", "help", "here", "high", "hold", "home", "hope", "hour", "huge", "idea", "into", "join", "just", "keep", "kill", "kind", "know", "land", "last", "late", "lead", "left", "less", "life", "like", "line", "list", "live", "long", "look", "lose", "loss", "love", "main", "make", "many", "mean", "meet", "mind", "miss", "more", "most", "move", "much", "must", "name", "near", "need", "next", "nice", "note", "once", "only", "onto", "open", "over", "page", "pain", "part", "pass", "past", "pick", "plan", "play", "poor", "pull", "push", "race", "rate", "read", "real", "rest", "rise", "risk", "road", "rock", "role", "room", "rule", "same", "save", "seat", "seek", "seem", "sell", "send", "show", "side", "sign", "site", "size", "some", "song", "sort", "star", "stay", "step", "stop", "such", "sure", "take", "talk", "team", "tell", "test", "than", "that", "them", "then", "they", "this", "thus", "time", "town", "tree", "trip", "true", "turn", "unit", "upon", "very", "view", "wait", "walk", "wall", "want", "week", "well", "west", "what", "when", "wide", "wife", "will", "with", "word", "work", "yeah", "year", "your"];
+
+function getRandomWord() {
+    return WORDS[Math.floor(Math.random() * WORDS.length)];
+}
+
+function speakWord(word) {
+    var msg = new SpeechSynthesisUtterance();
+    msg.text = word;
+    window.speechSynthesis.speak(msg);
+}
+
+const TIME_PER_WORD = 3000;
+const NUMBER_OF_WORDS_TO_GIVE = 20;
+let numberOfWordsGiven = 0;
+let numberOfWordsRead = 0;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function displayTheNextOne() {
+    let existingWord = document.getElementById("word").innerHTML
+    let timeUntilWordStarts = 1000;
+    if (existingWord != "...") {
+        speakWord(existingWord);
+    }
+
+    document.getElementById("word").innerHTML = "‎";
+    document.getElementById("done-btn").disabled = true;
+    await sleep(timeUntilWordStarts);
+    document.getElementById("score").innerHTML = numberOfWordsRead + "/" + numberOfWordsGiven;
+    document.getElementById("word").innerHTML = getRandomWord();
+    document.getElementById("done-btn").disabled = false;
+}
+
+async function roundIsOver() {
+    await addScore({wordsRead: numberOfWordsRead, totalWords: NUMBER_OF_WORDS_TO_GIVE});
+    await sleep(1000);
+    document.getElementById("word").innerHTML = "...";
+    document.getElementById("start-btn").style.display = 'block';
+    document.getElementById("done-btn").style.display = 'none';
+}
+
+async function startTheInterval() {
+    for (numberOfWordsGiven = 1; numberOfWordsGiven <= NUMBER_OF_WORDS_TO_GIVE; numberOfWordsGiven++) {
+        await displayTheNextOne();
+        await sleep(TIME_PER_WORD);
+    }
+    await roundIsOver();
+}
+document.getElementById("start-btn").addEventListener("click", () => {
+    startTheInterval();
+    document.getElementById("start-btn").style.display = 'none';
+    document.getElementById("done-btn").style.display = 'block';
+});
+document.getElementById("done-btn").addEventListener("click", () => {
+    document.getElementById("done-btn").disabled = true;
+    numberOfWordsRead += 1;
+    document.getElementById("score").innerHTML = numberOfWordsRead + "/" + numberOfWordsGiven;
+});
+</script>
+
+</html>
